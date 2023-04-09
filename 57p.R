@@ -50,12 +50,16 @@ df$expectation_1st = df$total / (df$price * 8145060)
 
 
 sd <- sd(df$expectation_1st)
-df$upper_bound <- df$expectation_1st + 1.96 * sd
-df$lower_bound <- df$expectation_1st - 1.96 * sd
-df$col <- ifelse(df$pop1 >= df$lower_bound && df$pop1 <= df$upper_bound, "red", "blue")
+t = qt(0.025, 1058)
+df$upper_bound <- df$expectation_1st  - t * sd
+df$lower_bound <- df$expectation_1st  + t * sd
+df$col <- "red"
+df$col[which(df$pop1 >= df$lower_bound & df$pop1 <= df$upper_bound)] <- "blue"
 
 
 plot(df$pop1~df$expectation_1st,cex = 0.5,pch=19,bg="black")
 abline(a=0,b=1, col="red")
-plot(df$pop1~df$num,col = df$col)
+plot(df$pop1~df$num,col = df$col,cex = 0.5,pch=19)
+lines(df$num,df$upper_bound, col="blue")
+lines(df$num,df$lower_bound, col="blue")
 lines(df$expectation_1st~df$num,col="yellow")
