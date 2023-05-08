@@ -1,90 +1,65 @@
-data = readLines("https://www.angio.net/pi/digits/pi1000000.txt") # 데이터 불러오기
-data = substr(data,3, nchar(data)) # 앞에 "3."부분 버리고 indexing
+#(1)#############################################################################
+power_of_test = function(x_,mu_0 ,mu_1,n){ # 첫 번째 그림 그리는 함수 정의
+  par(mfrow = c(3,1)) ;par(bg = "white", col.axis = "white", col.lab = "white",
+                           col.main = "white", col.sub = "white", xaxt = "n", 
+                           yaxt = "n" , bty = "n") # 흰 백지 생성
+  sample = x_ # 표본 추출
+  sample_mean = round(sample, 1) # 둘째자리에서 반올림
+  
+  x = seq(-15, 20, length.out = 100) # x축 범위 설정
+  y1 = dnorm(x, mu_1, 5) # 평균 3, 표준편차 5인 정규분포 값
+  plot(x, y1, type = "l", lwd = 2, xlim = c(-15, 20),ylim=c(-0.02,max(y1)+0.08)) 
+  stripchart(sample, add=TRUE,at=0.004,cex=2, pch=16,col="red") # 4개의 표본 
+  stripchart(mean(sample), add=TRUE,at=-0.005,cex=1.8, pch=24,col="blue",bg="blue") # 표본의 평균 파란 세모로 표시
+  lines(x = c(-15, 20), y = c(0, 0), col = "black", lwd = 2) # x축 그리기
+  arrows(3,0.02,mean(sample),0,length = 0.11) # 표본평균 가르킬 화살표
+  segments(3, 0, 3, -0.009, lwd = 2) # 아래쪽으로 향할 mu_1의 눈금
+  text(3, -0.017, expression(mu * "=3"),cex=1.3) # mu_1 text 표시
+  text(-7, max(y1), "X ~ N(3,5)",cex=1.4) # 정규분포 text 표시
+  text(3, 0.03, cex=1.3,substitute(paste(bar(x), " = ", mean),list(mean=round(mean(sample),1)))) # 표본평균 text 표시
+  text(3, max(y1)+0.07,expression(H[0]*" : "*mu*" <= "*0*" vs "*H[a]*" : "*mu*" > "*0*"\n"),cex=1.6) # 제목 text
+  text(3, max(y1)+0.04, cex=1.27,substitute(paste( "n = ",n),list(n=n)))
+  
+  x = seq(-6, 12, length.out = 100)
+  y2 = dnorm(x, 3, 5/sqrt(n))
+  alpha = qnorm(0.95, mean = 0, sd = 5/sqrt(n))
+  plot(x, y2, type = "l", lwd = 2, xlim = c(-15, 20),ylim=c(-0.03,max(y2)+0.05))
+  polygon(c(alpha, x[x>=alpha], tail(x[x>=alpha], 1)), c(0, y2[x>=alpha], 0), col="#FF00004D", border=NA) # 색칠
+  segments(alpha, 0, alpha,dnorm(alpha, 3, 5/sqrt(n)),col="black", lwd = 2)
+  lines(x = c(-6, 12), y = c(0, 0), col = "black", lwd = 2)
+  segments(3, 0, 3, -0.009, lwd = 2)
+  text(3, -0.026, expression(mu * "=3"),cex=1.4)
+  text(-7, max(y2)-0.039, cex=1.5,substitute(paste(bar(x), " ~ N(3,", frac(5,sqrt(n)),")"),list(n=n))) # 표본평균 text 표시
+  stripchart(mean(sample), add=TRUE,at=0.002,cex=1.6, pch=24,col="blue",bg="blue")
+  arrows(8, max(y2)-0.08,5,max(y2)-0.15,length=0.1)
+  text(12, max(y2)-0.039, cex=1.3, substitute(paste("1-", beta, "=", prob), 
+            list(prob = format(pnorm(alpha, mean = 3, sd = 5/sqrt(n), 
+            lower.tail = FALSE), digits = 2))))
+  
+  
+  
+  x = seq(-9, 9, length.out = 100)
+  y2 = dnorm(x, mu_0, 5/sqrt(n))
+  plot(x, y2, type = "l", lwd = 2, xaxt="s", xlim = c(-15, 20), ylim = c(-0.05, max(y2) + 0.05))
+  polygon(c(alpha, x[x>=alpha], tail(x[x>=alpha], 1)), c(0, y2[x>=alpha], 0), col="#FF00004D", border=NA)
+  segments(alpha, 0, alpha,dnorm(alpha, 0, 5/sqrt(n)),col="black", lwd = 2)
+  lines(x = c(-9, 9), y = c(0, 0), col = "black", lwd = 2)
+  text(alpha, -0.015, round(alpha,2) ,cex=1)
+  axis(side = 1, at = seq(-15, 20, by = 5),label = seq(-15, 20, by = 5))
+  text(0, 0.02, expression(mu * "=0"),cex=1)
+  segments(0, 0, 0, 0.009, lwd = 2)
+  text(-7, max(y2)-0.039, cex=1.5,substitute(paste("N(0,", frac(5,sqrt(n)),")"),list(n=n)))
+  stripchart(mean(sample), add=TRUE,at=0.002,cex=1.7, pch=24,col="blue",bg="blue")
+  arrows(7, max(y2)-0.08,4.8,max(y2)-0.15,length=0.1)
+  if(mean(sample) < alpha){
+    text(10, max(y2)-0.01, expression("Do not reject "*H[0]), cex=1.3)}else{
+      text(8, max(y2)-0.01, expression("Reject "*H[0]), cex=1.3)
+    }
+  text(8.5, max(y2)-0.05, expression(alpha*"=0.05"), cex=1.3)}
 
-by_2 = substring(data, seq(1, nchar(data), 2), 
-                 seq(2, nchar(data), 2))  # 2개씩 자르기
+set.seed(12)
+power_of_test(rnorm(4, 3, 5), 0, 3, 4)
+power_of_test(rnorm(9, 3, 5), 0, 3, 9)
+power_of_test(rnorm(25, 3, 5), 0, 3, 25)
+power_of_test(rnorm(36, 3, 5), 0, 3, 36)
 
-df2=data.frame(table(by_2)) # 두 개씩 자른 것의 빈도표를 data.frame으로 저장
-
-df2[df2$Freq == min(df2$Freq),] # 빈도수가 가장 적게 나온 값은?
-
-df2[df2$Freq == max(df2$Freq),] # 빈도수가 가장 많이 나온 값은?
-
-
-data = readLines("https://www.angio.net/pi/digits/pi1000000.txt")  # 데이터 불러오기
-data = substr(data,3, nchar(data)-1) # 3개씩 자르기 위해서 3부터 999999까지만 indexing
-
-by_3 <- substring(data, seq(1, nchar(data)-4 , by = 3),
-                  seq(3,nchar(data)-1 , by = 3)) # 3개씩 자르기
-
-df3=data.frame(table(by_3)) # by_3의 빈도수 계산
-
-df3[df3$Freq == min(df3$Freq),] # 가장 적은 빈도수를 가진 숫자는?
-
-df3[df3$Freq == max(df3$Freq),] # 가장 많은 빈도수를 가진 숫자는?
-
-for (i in 0:4){
-  rl <- rle(strsplit(data, "")[[1]]) 
-  # rle 내장 함수 이용하여, 연속된 개수와 그 때의 숫자를 lengths와 values에 각각 저장
-  num_1 = rl$lengths[which(rl$values == i)] 
-  # rl의 values가 0일 때의 길이를 num_1에 저장
-  # 그 다음 르핑에선 rl의 values가 2일 때의 길이를 num_1에 저장, 해당 과정을 4까지 반복
-  print(max(num_1))}# 0부터 4까지 각각 가장 많이 나온 빈도수 print
-
-# rle 내장 함수 이용하여, 연속된 개수와 그 때의 숫자를 lengths와 values에 각각 저장
-rle_x <- rle(strsplit(data, "")[[1]]) 
-# rle_x의 values가 3인 경우의 길이를 다 뽑은 후 그때의 max를 추출
-max_length <- max(rle_x$lengths[rle_x$values == "3"])
-# cussum 함수 이용하여 연속된 숫자들의 개수를 누적 합 후,
-# 기존 rle_x$values == "3"& rle_x$lengths == max_length를 만족하는 조건의 index
-# 이때 index는 cuscum 함수의 특성상 3이 가장 길게 나온 마지막 위치임
-last_position <- cumsum(rle_x$lengths)[rle_x$values == "3"
-                            & rle_x$lengths == max_length]
-start_position = last_position - max_length + 1 # 마지막 위치 - 연속된 길이 + 1 = 시작 위치
-start_position
-
-
-########################################
-
-par(mfrow=c(3,2),mar=c(6,6,3,3))
-data = readLines("https://www.angio.net/pi/digits/pi1000000.txt")
-data = substr(data,3, nchar(data)) # "3."부분 버리기
-
-by_1 = substring(data, seq(1, nchar(data), 1), 
-                 seq(1, nchar(data), 1)) # 1개씩 잘라서 저장
-
-df1=data.frame(table(by_1)) # 빈도수 계산
-a=data.frame(table(df1$Freq)) # 빈도수의 빈도 계산
-
-a_=rep(0,length(seq(min(df1$Freq),max(df1$Freq), 1))) # 가능한 빈도수의 범위만큼의 0으로 이루어진 벡터 생성
-# a$Var1, 즉 가능한 빈도수 부분의 위치만 벡터 a_에 해당 빈도수를 저장
-# 히스토그램에 해당 빈도수의 빈도는 빈도로 나타내고 나머지는 0으로 나타내기 위한 과정임
-a_[which( seq(min(df1$Freq),max(df1$Freq), 1) %in% a$Var1)]=a$Freq 
-
-
-barplot(a_, xlim = c(1, length(a_)), ylab = "Frequency")
-axis(side = 1, at = seq(52, length(a_)-30, length.out=4),line=0.2,labels = format(seq(99600, 100200, by = 200),scientific = FALSE))
-barplot(a_, xlim = c(1, length(a_)), ylab = "Frequency")
-axis(side = 1, at = seq(52, length(a_)-30, length.out=4),line=0.2, labels = format(seq(99600, 100200, by = 200),scientific = FALSE))
-
-########################################
-
-a=data.frame(table(df2$Freq)) # 위에서 진행했던 과정과 동일 과정
-a_=rep(0,length(seq(min(df2$Freq),max(df2$Freq), 1)))
-a_[which( seq(min(df2$Freq),max(df2$Freq), 1) %in% a$Var1)]=a$Freq
-
-barplot(a_, xlim = c(1, length(a_)), ylab = "Frequency")
-axis(side = 1, at = seq(3, length(a_), length.out=8),line=0.2, labels = format(seq(4850, 5200, by = 50),scientific = FALSE))
-barplot(a_, xlim = c(1, length(a_)), ylab = "Frequency")
-axis(side = 1, at = seq(3, length(a_), length.out=8),line=0.2,labels = format(seq(4850, 5200, by = 50),scientific = FALSE))
-
-########################################
-
-a=data.frame(table(df3$Freq)) # 위에서 진행했던 과정과 동일 과정
-a_=rep(0,length(seq(min(df3$Freq),max(df3$Freq), 1)))
-a_[which( seq(min(df3$Freq),max(df3$Freq), 1) %in% a$Var1)]=a$Freq
-
-barplot(a_, xlim = c(1, length(a_)), ylab = "Frequency")
-axis(side = 1, at = seq(14, length(a_)-13, length.out=6),line=0.2,labels = format(seq(280, 380, by = 20),scientific = FALSE))
-barplot(a_, xlim = c(1, length(a_)), ylab = "Frequency")
-axis(side = 1, at = seq(14, length(a_)-13, length.out=6),line=0.2, labels = format(seq(280, 380, by = 20),scientific = FALSE))
